@@ -1,6 +1,9 @@
 package com.productos.productoservice.services;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.productos.productoservice.dto.ProductoDto;
 import com.productos.productoservice.models.Products;
@@ -28,5 +31,17 @@ public class UpdateProductosService {
         productoExistente.setCategoria(dto.getCategoria());
 
         return repository.save(productoExistente);
+    }
+
+    @Transactional
+    public void updateStock(String id, int quantityToReduce) {
+        Products product = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + id));
+
+        // Restamos sin validar si es menor a cero
+        int newStock = product.getCantidad() - quantityToReduce;
+        product.setCantidad(newStock);
+
+        repository.save(product);
     }
 }

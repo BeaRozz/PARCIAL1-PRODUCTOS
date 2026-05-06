@@ -6,12 +6,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.productos.productoservice.dto.ProductKafkaDto;
 import com.productos.productoservice.dto.ProductoDto;
 import com.productos.productoservice.models.Products;
 import com.productos.productoservice.response.GeneralResponse;
@@ -109,4 +112,23 @@ public class ProductController {
         log.info("Petición DELETE exitosa: Producto con ID [{}] eliminado de la base de datos", id);
         return ResponseEntity.ok(new GeneralResponse<>("SUCCESS", "Producto eliminado exitosamente", null));
     }
+
+    @PutMapping("/{id}/reduce-stock")
+    public ResponseEntity<Void> reduceStock(
+            @PathVariable String id, 
+            @RequestParam int quantity) 
+    {    
+        log.info("📦 Solicitud para reducir stock: Producto {}, Cantidad {}", id, quantity);
+        updateService.updateStock(id, quantity);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/fail")
+    public ResponseEntity<GeneralResponse<String>> failProductCreation(@Valid @RequestBody ProductKafkaDto producto) {
+                
+        createService.crearProductoFail(producto); // Simulamos un error al crear el producto
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new GeneralResponse<>("ERROR", "Error simulado al crear el producto", null));
+    }
+    
 }
